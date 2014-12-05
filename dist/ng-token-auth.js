@@ -163,16 +163,20 @@ angular.module('ng-token-auth', ['ipCookie']).provider('$auth', function() {
                 confirm_success_url: successUrl,
                 config_name: configName
               });
-              return $http.post(this.apiUrl(opts.config) + this.getConfig(opts.config).emailRegistrationPath, params).success(function(resp) {
-                $rootScope.$broadcast('auth:registration-email-success', params);
-                if (skipConfirmation) {
-                  return this.validateUser({
-                    config: configName
-                  });
-                }
-              }).error(function(resp) {
-                return $rootScope.$broadcast('auth:registration-email-error', resp);
-              });
+              return $http.post(this.apiUrl(opts.config) + this.getConfig(opts.config).emailRegistrationPath, params).success((function(_this) {
+                return function(resp) {
+                  $rootScope.$broadcast('auth:registration-email-success', params);
+                  if (skipConfirmation) {
+                    return _this.validateUser({
+                      config: configName
+                    });
+                  }
+                };
+              })(this)).error((function(_this) {
+                return function(resp) {
+                  return $rootScope.$broadcast('auth:registration-email-error', resp);
+                };
+              })(this));
             },
             submitLogin: function(params, opts) {
               if (opts == null) {
