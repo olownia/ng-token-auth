@@ -174,6 +174,8 @@ angular.module('ng-token-auth', ['ipCookie'])
           submitRegistration: (params, opts={}) ->
             successUrl = @getResultOrValue(@getConfig(opts.config).confirmationSuccessUrl)
             configName = @getCurrentConfigName(opts.config)
+            skipConfirmation = @getConfig().skipConfirmation
+
             angular.extend(params, {
               confirm_success_url: successUrl,
               config_name: configName
@@ -181,7 +183,7 @@ angular.module('ng-token-auth', ['ipCookie'])
             $http.post(@apiUrl(opts.config) + @getConfig(opts.config).emailRegistrationPath, params)
               .success((resp)->
                 $rootScope.$broadcast('auth:registration-email-success', params)
-                @validateUser(config: 'default') if configName is 'default'
+                @validateUser(config: configName) if skipConfirmation
               )
               .error((resp) ->
                 $rootScope.$broadcast('auth:registration-email-error', resp)

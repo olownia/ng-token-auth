@@ -152,21 +152,22 @@ angular.module('ng-token-auth', ['ipCookie']).provider('$auth', function() {
               }
             },
             submitRegistration: function(params, opts) {
-              var configName, successUrl;
+              var configName, skipConfirmation, successUrl;
               if (opts == null) {
                 opts = {};
               }
               successUrl = this.getResultOrValue(this.getConfig(opts.config).confirmationSuccessUrl);
               configName = this.getCurrentConfigName(opts.config);
+              skipConfirmation = this.getConfig().skipConfirmation;
               angular.extend(params, {
                 confirm_success_url: successUrl,
                 config_name: configName
               });
               return $http.post(this.apiUrl(opts.config) + this.getConfig(opts.config).emailRegistrationPath, params).success(function(resp) {
                 $rootScope.$broadcast('auth:registration-email-success', params);
-                if (configName === 'default') {
+                if (skipConfirmation) {
                   return this.validateUser({
-                    config: 'default'
+                    config: configName
                   });
                 }
               }).error(function(resp) {
