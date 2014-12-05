@@ -24,6 +24,7 @@ angular.module('ng-token-auth', ['ipCookie']).provider('$auth', function() {
       validateOnPageLoad: true,
       forceHardRedirect: false,
       storage: 'cookies',
+      skipConfirmation: false,
       tokenFormat: {
         "access-token": "{{ token }}",
         "token-type": "Bearer",
@@ -151,17 +152,23 @@ angular.module('ng-token-auth', ['ipCookie']).provider('$auth', function() {
               }
             },
             submitRegistration: function(params, opts) {
-              var successUrl;
+              var configName, successUrl;
               if (opts == null) {
                 opts = {};
               }
               successUrl = this.getResultOrValue(this.getConfig(opts.config).confirmationSuccessUrl);
+              configName = this.getCurrentConfigName(opts.config);
               angular.extend(params, {
                 confirm_success_url: successUrl,
-                config_name: this.getCurrentConfigName(opts.config)
+                config_name: configName
               });
               return $http.post(this.apiUrl(opts.config) + this.getConfig(opts.config).emailRegistrationPath, params).success(function(resp) {
-                return $rootScope.$broadcast('auth:registration-email-success', params);
+                $rootScope.$broadcast('auth:registration-email-success', params);
+                if (configName === 'default') {
+                  return this.validateUser({
+                    config: 'default'
+                  });
+                }
               }).error(function(resp) {
                 return $rootScope.$broadcast('auth:registration-email-error', resp);
               });

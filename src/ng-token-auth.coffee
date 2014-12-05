@@ -18,6 +18,7 @@ angular.module('ng-token-auth', ['ipCookie'])
         validateOnPageLoad:      true
         forceHardRedirect:       false
         storage:                 'cookies'
+        skipConfirmation:        false
 
         tokenFormat:
           "access-token": "{{ token }}"
@@ -172,13 +173,15 @@ angular.module('ng-token-auth', ['ipCookie'])
           # redirect to this site.
           submitRegistration: (params, opts={}) ->
             successUrl = @getResultOrValue(@getConfig(opts.config).confirmationSuccessUrl)
+            configName = @getCurrentConfigName(opts.config)
             angular.extend(params, {
               confirm_success_url: successUrl,
-              config_name: @getCurrentConfigName(opts.config)
+              config_name: configName
             })
             $http.post(@apiUrl(opts.config) + @getConfig(opts.config).emailRegistrationPath, params)
               .success((resp)->
                 $rootScope.$broadcast('auth:registration-email-success', params)
+                @validateUser(config: 'default') if configName is 'default'
               )
               .error((resp) ->
                 $rootScope.$broadcast('auth:registration-email-error', resp)
